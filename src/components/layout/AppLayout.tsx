@@ -6,6 +6,7 @@ import { WorkspaceArea } from './WorkspaceArea';
 import { RightPanel } from './RightPanel';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { RightPanelProvider } from '@/context/RightPanelContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -27,38 +28,27 @@ export function AppLayout({ children }: AppLayoutProps) {
     setRightPanelOpen(false);
   };
 
-  // Контекст для передачи функций управления правой панелью
-  const rightPanelContext = {
-    open: openRightPanel,
-    close: closeRightPanel,
-    isOpen: rightPanelOpen,
-  };
-
   return (
     <ThemeProvider>
       <SidebarProvider>
-        <div className="h-screen flex flex-col">
-          <TopBar />
-          <div className="flex flex-1 overflow-hidden">
-            <Sidebar />
-            <WorkspaceArea rightPanelOpen={rightPanelOpen}>
-              {/* Передаем контекст правой панели в дочерние компоненты */}
-              {React.Children.map(children, child => {
-                if (React.isValidElement(child)) {
-                  return React.cloneElement(child, { rightPanelContext });
-                }
-                return child;
-              })}
-            </WorkspaceArea>
-            <RightPanel 
-              title={rightPanelContent.title}
-              isOpen={rightPanelOpen}
-              onClose={closeRightPanel}
-            >
-              {rightPanelContent.content}
-            </RightPanel>
+        <RightPanelProvider>
+          <div className="h-screen flex flex-col">
+            <TopBar />
+            <div className="flex flex-1 overflow-hidden">
+              <Sidebar />
+              <WorkspaceArea rightPanelOpen={rightPanelOpen}>
+                {children}
+              </WorkspaceArea>
+              <RightPanel 
+                title={rightPanelContent.title}
+                isOpen={rightPanelOpen}
+                onClose={closeRightPanel}
+              >
+                {rightPanelContent.content}
+              </RightPanel>
+            </div>
           </div>
-        </div>
+        </RightPanelProvider>
       </SidebarProvider>
     </ThemeProvider>
   );
