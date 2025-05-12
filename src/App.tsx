@@ -11,6 +11,9 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import AITools from "./pages/AITools";
 import DataManagement from "./pages/DataManagement";
+import DataAnalysis from "./pages/DataAnalysis";
+import ModelTraining from "./pages/ModelTraining";
+import SemanticMemory from "./pages/SemanticMemory";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +44,21 @@ const App = () => (
           <Route path="/data" element={
             <AppLayout>
               <DataManagement />
+            </AppLayout>
+          } />
+          <Route path="/data-analysis" element={
+            <AppLayout>
+              <DataAnalysis />
+            </AppLayout>
+          } />
+          <Route path="/model-training" element={
+            <AppLayout>
+              <ModelTraining />
+            </AppLayout>
+          } />
+          <Route path="/semantic-memory" element={
+            <AppLayout>
+              <SemanticMemory />
             </AppLayout>
           } />
           <Route path="/settings" element={

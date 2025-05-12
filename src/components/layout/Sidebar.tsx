@@ -10,7 +10,10 @@ import {
   ChevronLeft, 
   ChevronRight,
   Layers,
-  Search
+  Search,
+  FileChart,
+  BrainCircuit,
+  FileSearch
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -23,7 +26,10 @@ export function Sidebar() {
     { name: 'Дашборд', icon: <LayoutDashboard size={20} />, path: '/' },
     { name: 'Проекты', icon: <Layers size={20} />, path: '/projects' },
     { name: 'AI Инструменты', icon: <Code2 size={20} />, path: '/ai-tools' },
-    { name: 'Данные', icon: <Database size={20} />, path: '/data' },
+    { name: 'Управление данными', icon: <Database size={20} />, path: '/data' },
+    { name: 'Анализ данных', icon: <FileChart size={20} />, path: '/data-analysis' },
+    { name: 'Обучение моделей', icon: <BrainCircuit size={20} />, path: '/model-training' },
+    { name: 'Семантическая память', icon: <FileSearch size={20} />, path: '/semantic-memory' },
     { name: 'Настройки', icon: <Settings size={20} />, path: '/settings' },
   ];
 
