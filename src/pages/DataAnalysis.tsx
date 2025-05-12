@@ -1,384 +1,378 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { 
-  BarChart, 
-  Bar, 
-  LineChart,
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { 
-  Database, 
-  LineChart as LineChartIcon, 
-  BarChart as BarChartIcon,
-  FileSpreadsheet, 
-  FileChart,
-  Filter,
-  ArrowUpDown,
-  Download
+  BarChart2, 
+  PieChart, 
+  LineChart, 
+  Download, 
+  Filter, 
+  ArrowDownUp, 
+  RefreshCw, 
+  Plus,
+  FileText,
+  Table as TableIcon
 } from 'lucide-react';
-import { useRightPanel, useRightPanelContent } from '@/context/RightPanelContext';
-
-// Демо-данные
-const sampleData = [
-  { name: 'Янв', значение: 400, доход: 2400, активность: 240 },
-  { name: 'Фев', значение: 300, доход: 1398, активность: 110 },
-  { name: 'Мар', значение: 200, доход: 9800, активность: 290 },
-  { name: 'Апр', значение: 278, доход: 3908, активность: 200 },
-  { name: 'Май', значение: 189, доход: 4800, активность: 218 },
-  { name: 'Июн', значение: 239, доход: 3800, активность: 250 }
-];
-
-const pieData = [
-  { name: 'Категория A', value: 400 },
-  { name: 'Категория B', value: 300 },
-  { name: 'Категория C', value: 300 },
-  { name: 'Категория D', value: 200 }
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-// Компоненты для правой панели
-const DataFilterPanel = () => {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Фильтры данных</h3>
-      <div className="space-y-2">
-        <div>
-          <label className="text-sm font-medium">Диапазон дат</label>
-          <div className="flex gap-2 mt-1">
-            <input type="date" className="border rounded p-1 text-sm"/>
-            <input type="date" className="border rounded p-1 text-sm"/>
-          </div>
-        </div>
-        <div>
-          <label className="text-sm font-medium">Категории</label>
-          <div className="mt-1">
-            <select className="w-full border rounded p-1 text-sm">
-              <option>Все категории</option>
-              <option>Категория A</option>
-              <option>Категория B</option>
-              <option>Категория C</option>
-            </select>
-          </div>
-        </div>
-        <div className="pt-2">
-          <Button className="w-full">Применить фильтры</Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const DataPropertiesPanel = () => {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Свойства данных</h3>
-      <div>
-        <h4 className="text-sm font-medium">Источник</h4>
-        <p className="text-sm text-muted-foreground">sample_data.csv</p>
-      </div>
-      <div>
-        <h4 className="text-sm font-medium">Записей</h4>
-        <p className="text-sm text-muted-foreground">1,452</p>
-      </div>
-      <div>
-        <h4 className="text-sm font-medium">Столбцов</h4>
-        <p className="text-sm text-muted-foreground">8</p>
-      </div>
-      <div>
-        <h4 className="text-sm font-medium">Последнее обновление</h4>
-        <p className="text-sm text-muted-foreground">2 часа назад</p>
-      </div>
-      <div className="pt-2">
-        <Button variant="outline" className="w-full flex items-center gap-1">
-          <Download size={14} />
-          <span>Скачать данные</span>
-        </Button>
-      </div>
-    </div>
-  );
-};
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from '@/hooks/use-toast';
 
 export default function DataAnalysis() {
-  const { open } = useRightPanel();
-  const { setContent } = useRightPanelContent();
-  
-  const showFilters = () => {
-    setContent({
-      title: "Фильтры данных",
-      content: <DataFilterPanel />
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('emotion-analytics');
+
+  const handleExportData = () => {
+    toast({
+      title: "Экспорт данных",
+      description: "Файл с данными подготовлен к скачиванию",
     });
-    open();
+  };
+
+  const handleRefreshData = () => {
+    toast({
+      title: "Обновление данных",
+      description: "Данные успешно обновлены",
+    });
   };
   
-  const showProperties = () => {
-    setContent({
-      title: "Свойства данных",
-      content: <DataPropertiesPanel />
-    });
-    open();
-  };
+  // Sample data for the tables
+  const emotionalAnalyticsData = [
+    { 
+      id: 1, 
+      date: '12.05.2025', 
+      interactionType: 'Диалог', 
+      dominantEmotion: 'Заинтересованность', 
+      intensity: 'Высокая', 
+      duration: '15:42' 
+    },
+    { 
+      id: 2, 
+      date: '11.05.2025', 
+      interactionType: 'Обучение', 
+      dominantEmotion: 'Сосредоточенность', 
+      intensity: 'Средняя', 
+      duration: '32:18' 
+    },
+    { 
+      id: 3, 
+      date: '10.05.2025', 
+      interactionType: 'Анализ данных', 
+      dominantEmotion: 'Любопытство', 
+      intensity: 'Высокая', 
+      duration: '18:05' 
+    },
+    { 
+      id: 4, 
+      date: '09.05.2025', 
+      interactionType: 'Диалог', 
+      dominantEmotion: 'Радость', 
+      intensity: 'Умеренная', 
+      duration: '10:32' 
+    },
+    { 
+      id: 5, 
+      date: '08.05.2025', 
+      interactionType: 'Настройка', 
+      dominantEmotion: 'Нейтральность', 
+      intensity: 'Низкая', 
+      duration: '25:47' 
+    }
+  ];
   
+  const learningProgressData = [
+    { 
+      id: 1, 
+      concept: 'Распознавание эмоций', 
+      initialAccuracy: '65%', 
+      currentAccuracy: '89%', 
+      improvement: '+24%', 
+      lastTrained: '10.05.2025' 
+    },
+    { 
+      id: 2, 
+      concept: 'Контекстуальный анализ', 
+      initialAccuracy: '58%', 
+      currentAccuracy: '82%', 
+      improvement: '+24%', 
+      lastTrained: '11.05.2025' 
+    },
+    { 
+      id: 3, 
+      concept: 'Генерация ответов', 
+      initialAccuracy: '72%', 
+      currentAccuracy: '91%', 
+      improvement: '+19%', 
+      lastTrained: '12.05.2025' 
+    },
+    { 
+      id: 4, 
+      concept: 'Эмоциональная адаптация', 
+      initialAccuracy: '51%', 
+      currentAccuracy: '75%', 
+      improvement: '+24%', 
+      lastTrained: '09.05.2025' 
+    }
+  ];
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold heading-gradient">Анализ данных</h1>
-          <p className="text-muted-foreground">Визуализация и анализ данных для ваших проектов</p>
+          <p className="text-muted-foreground">Инструменты для анализа эмоциональных данных и обучения</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={showFilters} className="flex items-center gap-1">
-            <Filter size={16} />
-            <span>Фильтры</span>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline"
+            onClick={handleRefreshData}
+          >
+            <RefreshCw size={18} className="mr-2" /> Обновить
           </Button>
-          <Button variant="outline" onClick={showProperties} className="flex items-center gap-1">
-            <FileSpreadsheet size={16} />
-            <span>Свойства</span>
-          </Button>
-          <Button className="bg-gradient-to-r from-nova-600 to-forge-500">
-            <FileChart size={16} className="mr-1" />
-            Создать отчет
+          <Button 
+            variant="default"
+            className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+            onClick={handleExportData}
+          >
+            <Download size={18} className="mr-2" /> Экспорт
           </Button>
         </div>
       </div>
       
-      <Tabs defaultValue="dashboard">
-        <TabsList className="mb-4">
-          <TabsTrigger value="dashboard" className="flex items-center gap-1">
-            <LineChartIcon size={16} />
-            <span>Дашборд</span>
+      {/* Filter and Search Area */}
+      <div className="flex flex-col sm:flex-row gap-4 items-end">
+        <div className="flex-1">
+          <Input placeholder="Поиск по данным..." />
+        </div>
+        <div className="flex gap-2">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Период" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все время</SelectItem>
+              <SelectItem value="today">Сегодня</SelectItem>
+              <SelectItem value="week">Эта неделя</SelectItem>
+              <SelectItem value="month">Этот месяц</SelectItem>
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Filter size={16} className="mr-2" /> Фильтры
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>Тип данных</DropdownMenuItem>
+              <DropdownMenuItem>Интенсивность</DropdownMenuItem>
+              <DropdownMenuItem>Эмоциональное состояние</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Сбросить фильтры</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      
+      {/* Analytics Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart2 className="mr-2 h-5 w-5" />
+              Эмоциональное распределение
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center h-[200px]">
+            <div className="bg-muted rounded-full w-[150px] h-[150px] flex items-center justify-center">
+              <PieChart className="h-16 w-16 text-muted-foreground" />
+            </div>
+          </CardContent>
+          <CardFooter className="text-sm text-muted-foreground">
+            Распределение эмоций в диалогах за последние 30 дней
+          </CardFooter>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <LineChart className="mr-2 h-5 w-5" />
+              Прогресс обучения
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center h-[200px]">
+            <div className="bg-muted w-full h-[150px] rounded-md flex items-center justify-center">
+              <LineChart className="h-16 w-16 text-muted-foreground" />
+            </div>
+          </CardContent>
+          <CardFooter className="text-sm text-muted-foreground">
+            Динамика точности моделей за последние 30 дней
+          </CardFooter>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart2 className="mr-2 h-5 w-5" />
+              Активность взаимодействий
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center h-[200px]">
+            <div className="bg-muted w-full h-[150px] rounded-md flex items-center justify-center">
+              <BarChart2 className="h-16 w-16 text-muted-foreground" />
+            </div>
+          </CardContent>
+          <CardFooter className="text-sm text-muted-foreground">
+            Частота и продолжительность взаимодействий по дням
+          </CardFooter>
+        </Card>
+      </div>
+      
+      {/* Data Tables */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="emotion-analytics" className="flex items-center">
+            <BarChart2 className="h-4 w-4 mr-2" /> Анализ эмоций
           </TabsTrigger>
-          <TabsTrigger value="raw" className="flex items-center gap-1">
-            <Database size={16} />
-            <span>Сырые данные</span>
+          <TabsTrigger value="learning-progress" className="flex items-center">
+            <LineChart className="h-4 w-4 mr-2" /> Прогресс обучения
           </TabsTrigger>
-          <TabsTrigger value="charts" className="flex items-center gap-1">
-            <BarChartIcon size={16} />
-            <span>Графики</span>
+          <TabsTrigger value="reports" className="flex items-center">
+            <FileText className="h-4 w-4 mr-2" /> Отчеты
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="dashboard" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Общие записи</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1,452</div>
-                <p className="text-xs text-muted-foreground">+12% за месяц</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Среднее значение</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">267.8</div>
-                <p className="text-xs text-muted-foreground">-2.3% за месяц</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Аномалии</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">Обнаружено сегодня</p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Тренды значений</CardTitle>
-                <CardDescription>Динамика изменений по месяцам</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={sampleData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="значение" stroke="#8884d8" activeDot={{ r: 8 }} />
-                    <Line type="monotone" dataKey="активность" stroke="#82ca9d" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Распределение по категориям</CardTitle>
-                <CardDescription>Процентное соотношение категорий</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center pt-2">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="raw">
+        {/* Emotional Analytics Tab */}
+        <TabsContent value="emotion-analytics">
           <Card>
             <CardHeader>
-              <CardTitle>Исходные данные</CardTitle>
-              <CardDescription>Просмотр и фильтрация данных</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle>Аналитика эмоциональных взаимодействий</CardTitle>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <ArrowDownUp size={16} className="mr-2" /> Сортировать
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>По дате (новые)</DropdownMenuItem>
+                    <DropdownMenuItem>По дате (старые)</DropdownMenuItem>
+                    <DropdownMenuItem>По продолжительности</DropdownMenuItem>
+                    <DropdownMenuItem>По интенсивности</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <CardDescription>
+                Данные по эмоциональным взаимодействиям с SASOK
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-md overflow-auto max-h-[500px]">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Месяц
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <div className="flex items-center">
-                          Значение
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <div className="flex items-center">
-                          Доход
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <div className="flex items-center">
-                          Активность
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-background divide-y divide-gray-200">
-                    {sampleData.map((row, i) => (
-                      <tr key={i}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{row.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{row.значение}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{row.доход}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{row.активность}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4 flex justify-between items-center">
-                <div className="text-sm text-muted-foreground">
-                  Показано 6 из 1,452 записей
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="outline" size="sm">Предыдущая</Button>
-                  <Button variant="outline" size="sm">Следующая</Button>
-                </div>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Дата</TableHead>
+                    <TableHead>Тип взаимодействия</TableHead>
+                    <TableHead>Доминирующая эмоция</TableHead>
+                    <TableHead>Интенсивность</TableHead>
+                    <TableHead>Длительность</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {emotionalAnalyticsData.map(row => (
+                    <TableRow key={row.id}>
+                      <TableCell>{row.date}</TableCell>
+                      <TableCell>{row.interactionType}</TableCell>
+                      <TableCell>{row.dominantEmotion}</TableCell>
+                      <TableCell>{row.intensity}</TableCell>
+                      <TableCell>{row.duration}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="charts" className="space-y-6">
+        {/* Learning Progress Tab */}
+        <TabsContent value="learning-progress">
           <Card>
             <CardHeader>
-              <CardTitle>Конструктор графиков</CardTitle>
-              <CardDescription>Создание пользовательских визуализаций</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle>Прогресс обучения моделей</CardTitle>
+                <Button variant="outline" size="sm">
+                  <Plus size={16} className="mr-2" /> Добавить концепцию
+                </Button>
+              </div>
+              <CardDescription>
+                Отслеживание улучшений в понимании концепций и областей знаний
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Тип графика</label>
-                  <select className="w-full border rounded-md p-2">
-                    <option>Линейный график</option>
-                    <option>Столбчатая диаграмма</option>
-                    <option>Круговая диаграмма</option>
-                    <option>Область</option>
-                    <option>Точечная</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Ось X</label>
-                  <select className="w-full border rounded-md p-2">
-                    <option>name (Месяц)</option>
-                    <option>значение</option>
-                    <option>доход</option>
-                    <option>активность</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Ось Y</label>
-                  <select className="w-full border rounded-md p-2">
-                    <option>значение</option>
-                    <option>доход</option>
-                    <option>активность</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="border rounded-md p-4">
-                <ChartContainer
-                  className="h-[400px]"
-                  config={{
-                    values: {
-                      label: "Значения",
-                      color: "#8884d8"
-                    },
-                    income: {
-                      label: "Доход",
-                      color: "#82ca9d"
-                    }
-                  }}
-                >
-                  <BarChart data={sampleData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Legend />
-                    <Bar dataKey="значение" name="values" fill="#8884d8" />
-                    <Bar dataKey="доход" name="income" fill="#82ca9d" />
-                  </BarChart>
-                </ChartContainer>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button className="bg-gradient-to-r from-nova-600 to-forge-500">
-                  <Download size={16} className="mr-1" />
-                  Сохранить график
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Концепция</TableHead>
+                    <TableHead>Начальная точность</TableHead>
+                    <TableHead>Текущая точность</TableHead>
+                    <TableHead>Улучшение</TableHead>
+                    <TableHead>Последнее обучение</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {learningProgressData.map(row => (
+                    <TableRow key={row.id}>
+                      <TableCell>{row.concept}</TableCell>
+                      <TableCell>{row.initialAccuracy}</TableCell>
+                      <TableCell>{row.currentAccuracy}</TableCell>
+                      <TableCell className="text-green-500">{row.improvement}</TableCell>
+                      <TableCell>{row.lastTrained}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Reports Tab */}
+        <TabsContent value="reports">
+          <Card>
+            <CardHeader>
+              <CardTitle>Отчеты по анализу данных</CardTitle>
+              <CardDescription>
+                Сгенерированные отчеты и экспортированные данные
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <TableIcon className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="font-medium text-lg mb-1">Нет доступных отчетов</h3>
+                <p className="text-muted-foreground max-w-md mb-6">
+                  Создайте и сохраните отчет по данным анализа для доступа к нему в этом разделе
+                </p>
+                <Button>
+                  <Plus size={16} className="mr-2" /> Создать новый отчет
                 </Button>
               </div>
             </CardContent>

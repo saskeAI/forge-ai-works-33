@@ -11,9 +11,10 @@ import {
   ChevronRight,
   Layers,
   Search,
-  FileChart,
+  BarChart2,
   BrainCircuit,
-  FileSearch
+  FileSearch,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,10 +25,11 @@ export function Sidebar() {
   
   const navItems = [
     { name: 'Дашборд', icon: <LayoutDashboard size={20} />, path: '/' },
+    { name: 'SASOK AI', icon: <Zap size={20} />, path: '/sasok' },
     { name: 'Проекты', icon: <Layers size={20} />, path: '/projects' },
     { name: 'AI Инструменты', icon: <Code2 size={20} />, path: '/ai-tools' },
     { name: 'Управление данными', icon: <Database size={20} />, path: '/data' },
-    { name: 'Анализ данных', icon: <FileChart size={20} />, path: '/data-analysis' },
+    { name: 'Анализ данных', icon: <BarChart2 size={20} />, path: '/data-analysis' },
     { name: 'Обучение моделей', icon: <BrainCircuit size={20} />, path: '/model-training' },
     { name: 'Семантическая память', icon: <FileSearch size={20} />, path: '/semantic-memory' },
     { name: 'Настройки', icon: <Settings size={20} />, path: '/settings' },
