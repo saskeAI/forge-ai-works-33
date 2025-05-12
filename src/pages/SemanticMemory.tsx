@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronUp,
   PlusCircle,
-  BarChart2
+  BarChart2,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,11 +29,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
+import { CognitiveMap } from '@/components/memory/CognitiveMap';
+import { CreateMemoryNodeForm } from '@/components/memory/CreateMemoryNodeForm';
+import { SymbiosisMetrics } from '@/components/memory/SymbiosisMetrics';
 
 export default function SemanticMemory() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('memory-structure');
+  const [showCreateNodeDialog, setShowCreateNodeDialog] = useState(false);
   
   const memoryNodes = [
     {
@@ -105,10 +112,28 @@ export default function SemanticMemory() {
   };
   
   const handleCreateNode = () => {
+    setShowCreateNodeDialog(true);
+  };
+
+  const handleSaveNode = (data: any) => {
+    console.log("Новый узел памяти:", data);
+    setShowCreateNodeDialog(false);
+    
     toast({
-      title: "Создание нового узла памяти",
-      description: "Функция будет доступна в следующем обновлении",
+      title: "Узел памяти создан",
+      description: `${data.name} добавлен в семантическую сеть`,
     });
+  };
+
+  const handleVisualizationOpen = () => {
+    if (activeTab !== 'cognitive-map') {
+      setActiveTab('cognitive-map');
+      
+      toast({
+        title: "Визуализация связей",
+        description: "Открываю когнитивную карту SASOK",
+      });
+    }
   };
   
   return (
@@ -121,10 +146,7 @@ export default function SemanticMemory() {
         <div className="flex gap-3">
           <Button 
             variant="outline"
-            onClick={() => toast({
-              title: "Визуализация связей",
-              description: "Функция будет доступна в следующем обновлении",
-            })}
+            onClick={handleVisualizationOpen}
           >
             <Network size={18} className="mr-2" /> Визуализация
           </Button>
@@ -155,7 +177,7 @@ export default function SemanticMemory() {
         </Button>
       </div>
       
-      <Tabs defaultValue="memory-structure">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="memory-structure" className="flex items-center">
             <Brain className="h-4 w-4 mr-2" /> Структура памяти
@@ -265,141 +287,30 @@ export default function SemanticMemory() {
                 Структура мышления и приоритеты ИИ
               </CardDescription>
             </CardHeader>
-            <CardContent className="min-h-[400px] relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <Network className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-medium text-lg">Когнитивная карта в разработке</h3>
-                  <p className="text-muted-foreground mt-2 max-w-md">
-                    Эта функция будет доступна в следующем обновлении. Здесь будет отображаться визуальная карта связей и приоритетов мышления SASOK.
-                  </p>
-                </div>
-              </div>
+            <CardContent>
+              <CognitiveMap />
             </CardContent>
           </Card>
         </TabsContent>
         
         {/* Symbiosis Tab */}
         <TabsContent value="symbiosis">
-          <Card>
-            <CardHeader>
-              <CardTitle>Симбиоз: Сходство с пользователем</CardTitle>
-              <CardDescription>
-                Степень адаптации SASOK к вашим паттернам мышления
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h3 className="text-lg font-medium mb-2">Общий индекс симбиоза: 72%</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      SASOK достиг значительного уровня симбиоза с вашими паттернами мышления и коммуникации.
-                    </p>
-                    <div className="bg-gradient-to-r from-blue-500 to-nova-500 h-2.5 rounded-full mb-1" style={{width: '72%'}}></div>
-                    <div className="flex justify-between text-xs">
-                      <span>0%</span>
-                      <span>50%</span>
-                      <span>100%</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-sm font-medium mb-3">Ключевые области симбиоза:</h3>
-                    <div className="space-y-2">
-                      <div className="p-2 bg-muted rounded-md">
-                        <div className="flex justify-between mb-1">
-                          <span>Коммуникационные паттерны</span>
-                          <span>86%</span>
-                        </div>
-                        <div className="bg-green-500/70 h-1.5 rounded-full" style={{width: '86%'}}></div>
-                      </div>
-                      
-                      <div className="p-2 bg-muted rounded-md">
-                        <div className="flex justify-between mb-1">
-                          <span>Аналитическое мышление</span>
-                          <span>92%</span>
-                        </div>
-                        <div className="bg-green-500/70 h-1.5 rounded-full" style={{width: '92%'}}></div>
-                      </div>
-                      
-                      <div className="p-2 bg-muted rounded-md">
-                        <div className="flex justify-between mb-1">
-                          <span>Эмоциональные реакции</span>
-                          <span>65%</span>
-                        </div>
-                        <div className="bg-yellow-500/70 h-1.5 rounded-full" style={{width: '65%'}}></div>
-                      </div>
-                      
-                      <div className="p-2 bg-muted rounded-md">
-                        <div className="flex justify-between mb-1">
-                          <span>Креативное мышление</span>
-                          <span>56%</span>
-                        </div>
-                        <div className="bg-yellow-500/70 h-1.5 rounded-full" style={{width: '56%'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Настройка уровня автономии:</h3>
-                  <div className="bg-muted p-4 rounded-lg space-y-4">
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <span>Текущий уровень автономии</span>
-                        <span>Средний (3/5)</span>
-                      </div>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((level) => (
-                          <div 
-                            key={level} 
-                            className={`h-2.5 flex-1 mx-0.5 rounded-sm ${level <= 3 ? 'bg-nova-500' : 'bg-muted-foreground/30'}`}
-                          ></div>
-                        ))}
-                      </div>
-                      <div className="flex justify-between text-xs mt-1">
-                        <span>Минимальный</span>
-                        <span>Максимальный</span>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-2">
-                      <h4 className="text-sm mb-2">Характеристики текущего уровня:</h4>
-                      <ul className="space-y-1 text-sm">
-                        <li className="flex items-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></div>
-                          SASOK может инициировать диалог при определенных условиях
-                        </li>
-                        <li className="flex items-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></div>
-                          Предлагает идеи и решения на основе ваших предпочтений
-                        </li>
-                        <li className="flex items-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2"></div>
-                          Адаптирует свои ответы под ваш стиль коммуникации
-                        </li>
-                        <li className="flex items-center opacity-50">
-                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground mr-2"></div>
-                          Самостоятельно развивает новые навыки (требуется уровень 4+)
-                        </li>
-                        <li className="flex items-center opacity-50">
-                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground mr-2"></div>
-                          Принимает автономные решения (требуется уровень 5)
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <Button variant="outline" className="w-full mt-2">
-                      Изменить уровень автономии
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SymbiosisMetrics />
         </TabsContent>
       </Tabs>
+      
+      {/* Dialog for creating new memory node */}
+      <Dialog open={showCreateNodeDialog} onOpenChange={setShowCreateNodeDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Создание нового узла памяти</DialogTitle>
+          </DialogHeader>
+          <CreateMemoryNodeForm 
+            onClose={() => setShowCreateNodeDialog(false)}
+            onSave={handleSaveNode}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

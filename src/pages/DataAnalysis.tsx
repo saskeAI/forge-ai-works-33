@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { 
   BarChart2, 
-  PieChart, 
-  LineChart, 
+  PieChart as PieChartIcon, 
+  LineChart as LineChartIcon, 
   Download, 
   Filter, 
   ArrowDownUp, 
@@ -39,6 +39,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
+import { EmotionalAnalyticsChart } from '@/components/analysis/EmotionalAnalyticsChart';
+import { LearningProgressChart } from '@/components/analysis/LearningProgressChart';
+import { ActivityTrackingChart } from '@/components/analysis/ActivityTrackingChart';
 
 export default function DataAnalysis() {
   const { toast } = useToast();
@@ -197,56 +200,9 @@ export default function DataAnalysis() {
       
       {/* Analytics Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart2 className="mr-2 h-5 w-5" />
-              Эмоциональное распределение
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[200px]">
-            <div className="bg-muted rounded-full w-[150px] h-[150px] flex items-center justify-center">
-              <PieChart className="h-16 w-16 text-muted-foreground" />
-            </div>
-          </CardContent>
-          <CardFooter className="text-sm text-muted-foreground">
-            Распределение эмоций в диалогах за последние 30 дней
-          </CardFooter>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <LineChart className="mr-2 h-5 w-5" />
-              Прогресс обучения
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[200px]">
-            <div className="bg-muted w-full h-[150px] rounded-md flex items-center justify-center">
-              <LineChart className="h-16 w-16 text-muted-foreground" />
-            </div>
-          </CardContent>
-          <CardFooter className="text-sm text-muted-foreground">
-            Динамика точности моделей за последние 30 дней
-          </CardFooter>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart2 className="mr-2 h-5 w-5" />
-              Активность взаимодействий
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-[200px]">
-            <div className="bg-muted w-full h-[150px] rounded-md flex items-center justify-center">
-              <BarChart2 className="h-16 w-16 text-muted-foreground" />
-            </div>
-          </CardContent>
-          <CardFooter className="text-sm text-muted-foreground">
-            Частота и продолжительность взаимодействий по дням
-          </CardFooter>
-        </Card>
+        <EmotionalAnalyticsChart />
+        <LearningProgressChart />
+        <ActivityTrackingChart />
       </div>
       
       {/* Data Tables */}
@@ -256,7 +212,7 @@ export default function DataAnalysis() {
             <BarChart2 className="h-4 w-4 mr-2" /> Анализ эмоций
           </TabsTrigger>
           <TabsTrigger value="learning-progress" className="flex items-center">
-            <LineChart className="h-4 w-4 mr-2" /> Прогресс обучения
+            <LineChartIcon className="h-4 w-4 mr-2" /> Прогресс обучения
           </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center">
             <FileText className="h-4 w-4 mr-2" /> Отчеты

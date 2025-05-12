@@ -1,348 +1,337 @@
 
 import React, { useState } from 'react';
 import { 
-  BrainCircuit, 
-  FileUp, 
-  BookOpen, 
-  Wand2, 
-  Play, 
-  CheckCircle2, 
-  X, 
-  AlertTriangle, 
-  BarChart2,
-  Database
+  Brain, 
+  BarChart2, 
+  History, 
+  Database, 
+  Download, 
+  RefreshCw, 
+  Play,
+  Pause,
+  AlertTriangle,
+  Check,
+  Upload
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { ModelTrainingForm } from '@/components/training/ModelTrainingForm';
+import { TrainingMetricsChart } from '@/components/training/TrainingMetricsChart';
+import { ModelComparison } from '@/components/training/ModelComparison';
 
 export default function ModelTraining() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('examples');
-  const [trainingStatus, setTrainingStatus] = useState({
-    isTraining: false,
-    progress: 0,
-    stage: 'Готов к обучению'
-  });
-  const [uploadedDatasets, setUploadedDatasets] = useState<string[]>([]);
-  const [emotionSettings, setEmotionSettings] = useState({
-    empathy: 70,
-    curiosity: 80,
-    humor: 60,
-    creativity: 75
-  });
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingProgress, setTrainingProgress] = useState(0);
   
-  const trainExamples = [
-    {
-      id: 1,
-      stimulus: 'Пользователь выражает разочарование проектом',
-      currentResponse: 'Я понимаю ваше разочарование. Возможно, стоит пересмотреть подход?',
-      emotionalState: 'Эмпатия',
-      rating: 4
-    },
-    {
-      id: 2,
-      stimulus: 'Пользователь делится успехом в работе',
-      currentResponse: 'Это отличная новость! Ваши усилия принесли результаты.',
-      emotionalState: 'Радость',
-      rating: 5
-    },
-    {
-      id: 3,
-      stimulus: 'Пользователь задает сложный технический вопрос',
-      currentResponse: 'Интересный вопрос. Давайте разберемся в деталях...',
-      emotionalState: 'Анализ',
-      rating: 3
+  // Имитация процесса обучения
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isTraining && trainingProgress < 100) {
+      interval = setInterval(() => {
+        setTrainingProgress(prev => {
+          const newProgress = prev + 1;
+          if (newProgress >= 100) {
+            setIsTraining(false);
+            toast({
+              title: "Обучение завершено",
+              description: "Модель успешно обучена и готова к использованию.",
+              variant: "success"
+            });
+          }
+          return newProgress;
+        });
+      }, 300);
     }
-  ];
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isTraining, trainingProgress, toast]);
   
   const handleStartTraining = () => {
-    setTrainingStatus({
-      isTraining: true,
-      progress: 0,
-      stage: 'Подготовка данных'
-    });
-    
-    toast({
-      title: "Обучение запущено",
-      description: "Процесс обучения модели начат. Это может занять некоторое время.",
-    });
-    
-    // Simulate training progress
-    const interval = setInterval(() => {
-      setTrainingStatus(prev => {
-        if (prev.progress >= 100) {
-          clearInterval(interval);
-          toast({
-            title: "Обучение завершено",
-            description: "Модель успешно обучена и готова к использованию.",
-          });
-          return { isTraining: false, progress: 100, stage: 'Обучение завершено' };
-        }
-        
-        let newProgress = prev.progress + Math.random() * 10;
-        let newStage = prev.stage;
-        
-        if (newProgress > 25 && prev.progress <= 25) {
-          newStage = 'Обработка эмоциональных паттернов';
-        } else if (newProgress > 60 && prev.progress <= 60) {
-          newStage = 'Оптимизация нейронных связей';
-        } else if (newProgress > 90 && prev.progress <= 90) {
-          newStage = 'Финализация модели';
-        }
-        
-        return {
-          ...prev,
-          progress: Math.min(newProgress, 100),
-          stage: newStage
-        };
-      });
-    }, 800);
-  };
-  
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newDatasets = Array.from(e.target.files).map(file => file.name);
-      setUploadedDatasets(prev => [...prev, ...newDatasets]);
-      
+    if (isTraining) {
+      setIsTraining(false);
       toast({
-        title: "Датасет загружен",
-        description: `${newDatasets.join(", ")} успешно загружен и готов к обработке.`,
+        title: "Обучение приостановлено",
+        description: "Вы можете возобновить обучение в любой момент."
+      });
+    } else {
+      setIsTraining(true);
+      setTrainingProgress(0);
+      toast({
+        title: "Обучение запущено",
+        description: "Начинаю процесс обучения модели SASOK."
       });
     }
   };
   
-  const handleEmotionChange = (emotion: keyof typeof emotionSettings, value: number[]) => {
-    setEmotionSettings(prev => ({
-      ...prev,
-      [emotion]: value[0]
-    }));
+  const handleExportModel = () => {
+    toast({
+      title: "Экспорт модели",
+      description: "Модель подготовлена к экспорту"
+    });
   };
   
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold heading-gradient">Модуль обучения SASOK</h1>
-          <p className="text-muted-foreground">Создание и настройка эмоционального интеллекта</p>
+          <h1 className="text-3xl font-bold heading-gradient">Обучение моделей</h1>
+          <p className="text-muted-foreground">Настройка, обучение и анализ моделей SASOK</p>
         </div>
         <div className="flex gap-3">
           <Button 
-            variant={trainingStatus.isTraining ? "outline" : "default"}
-            className={!trainingStatus.isTraining ? "bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90" : ""}
-            onClick={handleStartTraining}
-            disabled={trainingStatus.isTraining}
+            variant="outline"
+            onClick={handleExportModel}
           >
-            {trainingStatus.isTraining ? (
-              <>
-                <BarChart2 size={18} className="mr-2 animate-pulse" /> Идет обучение...
-              </>
+            <Download size={18} className="mr-2" /> Экспорт
+          </Button>
+          <Button 
+            variant="default"
+            className={isTraining 
+              ? "bg-amber-600 hover:bg-amber-700" 
+              : "bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+            }
+            onClick={handleStartTraining}
+          >
+            {isTraining ? (
+              <><Pause size={18} className="mr-2" /> Приостановить</>
             ) : (
-              <>
-                <BrainCircuit size={18} className="mr-2" /> Запустить обучение
-              </>
+              <><Play size={18} className="mr-2" /> Запустить</>
             )}
           </Button>
         </div>
       </div>
-
-      {/* Training Status Card */}
-      {trainingStatus.isTraining && (
-        <Card className="mb-6 border-l-4 border-l-nova-500">
+      
+      {isTraining && (
+        <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium">Статус обучения: {trainingStatus.stage}</h3>
-              <span className="text-sm">{Math.round(trainingStatus.progress)}%</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Brain className="h-5 w-5 mr-2 text-blue-500 animate-pulse" />
+                  <span className="font-medium">Обучение модели в процессе...</span>
+                </div>
+                <span className="text-sm font-medium">{trainingProgress}%</span>
+              </div>
+              <Progress value={trainingProgress} className="h-2" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Эпоха {Math.floor(trainingProgress / 3.33)}/30</span>
+                <span>Осталось примерно {Math.ceil((100 - trainingProgress) * 0.3)} мин</span>
+              </div>
             </div>
-            <Progress value={trainingStatus.progress} className="h-2" />
           </CardContent>
         </Card>
       )}
-
+      
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 mb-6">
-          <TabsTrigger value="examples" className="flex items-center">
-            <BookOpen className="h-4 w-4 mr-2" /> Обучение на примерах
+        <TabsList className="mb-6">
+          <TabsTrigger value="dashboard" className="flex items-center">
+            <BarChart2 className="h-4 w-4 mr-2" /> Дашборд
           </TabsTrigger>
-          <TabsTrigger value="emotions" className="flex items-center">
-            <Wand2 className="h-4 w-4 mr-2" /> Редактор эмоций
+          <TabsTrigger value="configure" className="flex items-center">
+            <Brain className="h-4 w-4 mr-2" /> Конфигурация
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center">
+            <History className="h-4 w-4 mr-2" /> История обучения
           </TabsTrigger>
           <TabsTrigger value="datasets" className="flex items-center">
-            <Database className="h-4 w-4 mr-2" /> Загрузка датасетов
+            <Database className="h-4 w-4 mr-2" /> Наборы данных
           </TabsTrigger>
         </TabsList>
         
-        {/* Examples Training Tab */}
-        <TabsContent value="examples">
-          <div className="grid grid-cols-1 gap-6">
-            {trainExamples.map(example => (
-              <Card key={example.id}>
+        {/* Dashboard Tab */}
+        <TabsContent value="dashboard">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-2">
+              <Card className="h-full">
                 <CardHeader>
-                  <CardTitle className="text-lg">Пример #{example.id}</CardTitle>
+                  <CardTitle>Статус системы обучения</CardTitle>
                   <CardDescription>
-                    Эмоциональное состояние: <span className="font-medium">{example.emotionalState}</span>
+                    Текущее состояние и запланированные задачи
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-1">Стимул:</h4>
-                      <div className="bg-muted p-3 rounded-md">
-                        {example.stimulus}
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-muted/50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-green-500">4</div>
+                        <div className="text-sm text-muted-foreground">Активные модели</div>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-blue-500">2</div>
+                        <div className="text-sm text-muted-foreground">В очереди</div>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-amber-500">85%</div>
+                        <div className="text-sm text-muted-foreground">Загрузка GPU</div>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-purple-500">12.6</div>
+                        <div className="text-sm text-muted-foreground">GB RAM</div>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-medium mb-1">Текущий ответ SASOK:</h4>
-                      <div className="bg-muted/50 p-3 rounded-md border">
-                        {example.currentResponse}
-                      </div>
+                    
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium">Недавние события</h3>
+                      <ul className="space-y-2">
+                        <li className="text-sm bg-muted p-2 rounded-md flex">
+                          <span className="text-green-500 mr-2">●</span>
+                          SASOK Core v1.0 - обучение завершено
+                        </li>
+                        <li className="text-sm bg-muted p-2 rounded-md flex">
+                          <span className="text-amber-500 mr-2">●</span>
+                          SASOK Emotional v0.8 - валидация
+                        </li>
+                        <li className="text-sm bg-muted p-2 rounded-md flex">
+                          <span className="text-blue-500 mr-2">●</span>
+                          Загрузка нового набора данных
+                        </li>
+                      </ul>
                     </div>
-                    <div className="pt-2">
-                      <h4 className="text-sm font-medium mb-2">Оценка ответа:</h4>
-                      <div className="flex items-center">
-                        <div className="flex space-x-1 mr-3">
-                          {Array.from({length: 5}).map((_, i) => (
-                            <svg 
-                              key={i}
-                              className={`w-6 h-6 cursor-pointer ${i < example.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                              fill="currentColor" 
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
+                    
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Предупреждения</h3>
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-700 dark:text-yellow-400 p-3 rounded-md flex items-start">
+                        <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+                        <div className="text-sm">
+                          Обнаружены признаки переобучения в модели SASOK Experimental v0.2. Рассмотрите возможность регуляризации.
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                          {example.rating === 5 ? "Отличный ответ" : 
-                           example.rating === 4 ? "Хороший ответ" :
-                           example.rating === 3 ? "Нормальный ответ" :
-                           example.rating === 2 ? "Требует улучшения" : "Плохой ответ"}
-                        </span>
                       </div>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" size="sm">
-                    <X size={16} className="mr-2" /> Отклонить
-                  </Button>
-                  <Button variant="default" size="sm">
-                    <CheckCircle2 size={16} className="mr-2" /> Принять для обучения
-                  </Button>
-                </CardFooter>
               </Card>
-            ))}
+            </div>
             
-            <Button className="w-full py-6 border-dashed bg-muted/50 hover:bg-muted">
-              <Play size={18} className="mr-2" /> Добавить новый пример
-            </Button>
+            <div className="lg:col-span-3">
+              <div className="space-y-6">
+                <TrainingMetricsChart />
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <ModelComparison />
           </div>
         </TabsContent>
         
-        {/* Emotion Editor Tab */}
-        <TabsContent value="emotions">
+        {/* Configure Tab */}
+        <TabsContent value="configure">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ModelTrainingForm />
+            </div>
+            
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Рекомендации</CardTitle>
+                  <CardDescription>
+                    На основе анализа предыдущих моделей
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h3 className="font-medium mb-1">Оптимизация гиперпараметров</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Для текущего набора данных рекомендуется скорость обучения 0.0005 и размер пакета 64.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h3 className="font-medium mb-1">Архитектура модели</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Для задач эмоционального анализа лучшие результаты показывает архитектура Transformer с 8 слоями внимания.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h3 className="font-medium mb-1">Предобработка данных</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Рекомендуется применить нормализацию и аугментацию для улучшения обобщающей способности модели.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-muted p-3 rounded-lg">
+                    <h3 className="font-medium mb-1">Стратегия обучения</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Рассмотрите возможность переноса знаний (transfer learning) из модели SASOK Core v1.0 для ускорения обучения.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+        
+        {/* History Tab */}
+        <TabsContent value="history">
           <Card>
             <CardHeader>
-              <CardTitle>Редактор эмоциональных параметров</CardTitle>
+              <CardTitle>История обучения моделей</CardTitle>
               <CardDescription>
-                Настройте эмоциональные характеристики вашего ИИ
+                Хронология процессов обучения и результаты
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-medium">Эмпатия</label>
-                    <span>{emotionSettings.empathy}%</span>
-                  </div>
-                  <Slider
-                    defaultValue={[emotionSettings.empathy]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={(value) => handleEmotionChange('empathy', value)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Способность ИИ понимать и реагировать на эмоции пользователя
-                  </p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-medium">Любопытство</label>
-                    <span>{emotionSettings.curiosity}%</span>
-                  </div>
-                  <Slider
-                    defaultValue={[emotionSettings.curiosity]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={(value) => handleEmotionChange('curiosity', value)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Стремление ИИ узнавать новое и задавать уточняющие вопросы
-                  </p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-medium">Юмор</label>
-                    <span>{emotionSettings.humor}%</span>
-                  </div>
-                  <Slider
-                    defaultValue={[emotionSettings.humor]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={(value) => handleEmotionChange('humor', value)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Способность ИИ использовать юмор в общении
-                  </p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-medium">Творчество</label>
-                    <span>{emotionSettings.creativity}%</span>
-                  </div>
-                  <Slider
-                    defaultValue={[emotionSettings.creativity]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={(value) => handleEmotionChange('creativity', value)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Творческий подход ИИ к решению задач и генерации контента
-                  </p>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-medium mb-2">Эмоциональные триггеры:</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                    <span>Когда пользователь выражает грусть</span>
-                    <span className="text-sm">Повышенная эмпатия</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-muted rounded-md">
-                    <span>Когда пользователь задает сложный вопрос</span>
-                    <span className="text-sm">Аналитический режим</span>
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full mt-2">
-                    + Добавить триггер
-                  </Button>
-                </div>
+            <CardContent>
+              <div className="relative">
+                <div className="absolute top-0 bottom-0 left-7 border-l border-dashed border-muted-foreground/20"></div>
+                <ol className="relative space-y-6">
+                  {[
+                    {
+                      date: '12 мая 2025, 10:45',
+                      title: 'SASOK Experimental v0.2',
+                      description: 'Обучение завершено с точностью 94%',
+                      status: 'success'
+                    },
+                    {
+                      date: '11 мая 2025, 15:30',
+                      title: 'SASOK Emotional v0.8',
+                      description: 'Обучение завершено с точностью 87%',
+                      status: 'success'
+                    },
+                    {
+                      date: '10 мая 2025, 09:15',
+                      title: 'SASOK Core v1.0',
+                      description: 'Обучение завершено с точностью 92%',
+                      status: 'success'
+                    },
+                    {
+                      date: '5 мая 2025, 14:20',
+                      title: 'SASOK Prototype v0.3',
+                      description: 'Обучение прервано из-за проблем с данными',
+                      status: 'error'
+                    },
+                    {
+                      date: '28 апреля 2025, 11:05',
+                      title: 'SASOK Legacy v0.5',
+                      description: 'Обучение завершено с точностью 79%',
+                      status: 'success'
+                    }
+                  ].map((item, index) => (
+                    <li key={index} className="ml-14 relative">
+                      <div className={`absolute -left-9 p-2 rounded-full ${
+                        item.status === 'success' 
+                          ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' 
+                          : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                      }`}>
+                        {item.status === 'success' ? <Check className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+                      </div>
+                      <time className="block text-xs text-muted-foreground">{item.date}</time>
+                      <h3 className="text-base font-semibold mt-0.5">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button>Сохранить эмоциональные настройки</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
         
@@ -350,72 +339,85 @@ export default function ModelTraining() {
         <TabsContent value="datasets">
           <Card>
             <CardHeader>
-              <CardTitle>Загрузка собственных датасетов</CardTitle>
+              <CardTitle>Управление наборами данных</CardTitle>
               <CardDescription>
-                Загрузите свои датасеты для обучения модели
+                Доступные наборы данных для обучения моделей
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border-2 border-dashed rounded-lg p-6 text-center mb-6">
-                <FileUp className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="font-medium mb-1">Перетащите файлы или нажмите для загрузки</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Поддерживаемые форматы: CSV, JSON, TXT (макс. 50 МБ)
-                </p>
-                <div className="flex justify-center">
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <Input 
-                      id="file-upload" 
-                      type="file" 
-                      className="hidden" 
-                      multiple
-                      onChange={handleFileUpload}
-                    />
-                    <Button variant="outline" type="button">Выбрать файлы</Button>
-                  </label>
-                </div>
-              </div>
-              
-              {uploadedDatasets.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Загруженные датасеты:</h3>
-                  <div className="space-y-2">
-                    {uploadedDatasets.map((dataset, index) => (
-                      <div key={index} className="flex justify-between items-center p-2 bg-muted rounded-md">
-                        <div className="flex items-center">
-                          <Database className="h-4 w-4 mr-2" />
-                          <span>{dataset}</span>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    {
+                      name: 'Эмоциональные диалоги',
+                      size: '8.2 ГБ',
+                      records: '1.2M',
+                      lastUpdated: '11 мая 2025',
+                      icon: <Brain className="h-10 w-10 text-pink-500" />
+                    },
+                    {
+                      name: 'Паттерны коммуникации',
+                      size: '5.7 ГБ',
+                      records: '845K',
+                      lastUpdated: '8 мая 2025',
+                      icon: <BarChart2 className="h-10 w-10 text-blue-500" />
+                    },
+                    {
+                      name: 'Контексты взаимодействий',
+                      size: '12.5 ГБ',
+                      records: '2.3M',
+                      lastUpdated: '10 мая 2025',
+                      icon: <Database className="h-10 w-10 text-green-500" />
+                    }
+                  ].map((dataset, index) => (
+                    <Card key={index} className="bg-muted/50">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start">
+                          <div className="p-3 bg-background rounded-lg mr-3">
+                            {dataset.icon}
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{dataset.name}</h3>
+                            <div className="flex flex-wrap text-xs text-muted-foreground gap-x-4 mt-1">
+                              <span>Размер: {dataset.size}</span>
+                              <span>Записей: {dataset.records}</span>
+                              <span>Обновлено: {dataset.lastUpdated}</span>
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <Button size="sm" variant="outline" className="h-7 text-xs px-2">
+                                Просмотр
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs px-2">
+                                Обновить
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                <div className="border-t border-border pt-6">
+                  <h3 className="font-medium mb-4">Загрузка нового набора данных</h3>
+                  <div className="h-28 border-2 border-dashed rounded-md flex flex-col items-center justify-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Перетащите файлы сюда или нажмите кнопку ниже
+                    </p>
+                    <Button variant="outline" size="sm">
+                      <Upload size={16} className="mr-2" />
+                      Выбрать файлы
+                    </Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Поддерживаемые форматы: CSV, JSON, JSONL, TXT. Максимальный размер: 50 ГБ
                   </div>
                 </div>
-              )}
-              
-              {uploadedDatasets.length === 0 && (
-                <div className="flex flex-col items-center justify-center text-center py-6">
-                  <AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" />
-                  <h3 className="font-medium">Нет загруженных датасетов</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Загрузите датасеты для дообучения модели
-                  </p>
-                </div>
-              )}
+              </div>
             </CardContent>
-            <CardFooter>
-              <Button 
-                disabled={uploadedDatasets.length === 0}
-                variant={uploadedDatasets.length === 0 ? "outline" : "default"}
-              >
-                Обработать датасеты
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-}
+};
