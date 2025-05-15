@@ -1,19 +1,25 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Network, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Network, FilePlus, CheckCircle2, Clock, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { CreateProposalDialog } from './CreateProposalDialog';
 
 interface Proposal {
   id: number;
   title: string;
   description: string;
+  creator: string;
+  createdAt: string;
+  endDate: string;
   votesFor: number;
   votesAgainst: number;
-  endTime: Date;
+  status: 'active' | 'passed' | 'rejected';
+  voted?: boolean;
+  voteType?: 'for' | 'against';
+  category: string;
 }
 
 export const DaoVoting = () => {
@@ -21,29 +27,82 @@ export const DaoVoting = () => {
   const [proposals, setProposals] = useState<Proposal[]>([
     {
       id: 1,
-      title: 'Обновление алгоритма эмоционального интеллекта SASOK',
-      description: 'Добавление нового алгоритма распознавания эмоций на основе нейроморфных вычислений',
-      votesFor: 340,
-      votesAgainst: 120,
-      endTime: new Date('2025-06-01')
+      title: "Добавление эмоциональных параметров",
+      description: "Предложение добавить новые эмоциональные параметры для более тонкой настройки ИИ-моделей SASOK",
+      creator: "0x1234...5678",
+      createdAt: "2025-05-08T10:30:00",
+      endDate: "2025-05-15T10:30:00",
+      votesFor: 682,
+      votesAgainst: 128,
+      status: 'active',
+      category: "Технический"
     },
     {
       id: 2,
-      title: 'Интеграция с децентрализованными хранилищами данных',
-      description: 'Использование IPFS для хранения и обработки пользовательских данных',
-      votesFor: 280,
-      votesAgainst: 90,
-      endTime: new Date('2025-05-25')
+      title: "Интеграция с внешними API",
+      description: "Предложение интегрировать API для расширения возможностей SASOK",
+      creator: "0xABCD...EF01",
+      createdAt: "2025-05-06T14:15:00",
+      endDate: "2025-05-13T14:15:00",
+      votesFor: 853,
+      votesAgainst: 342,
+      status: 'active',
+      category: "Интеграции"
+    },
+    {
+      id: 3,
+      title: "Новая система вознаграждений",
+      description: "Внедрение улучшенной системы вознаграждений для поощрения активных участников экосистемы",
+      creator: "0x9876...5432",
+      createdAt: "2025-05-03T09:45:00",
+      endDate: "2025-05-10T09:45:00",
+      votesFor: 1205,
+      votesAgainst: 115,
+      status: 'passed',
+      category: "Экономика"
+    },
+    {
+      id: 4,
+      title: "Модификация модели обучения",
+      description: "Предложение по изменению модели машинного обучения для улучшения точности предсказаний",
+      creator: "0x4567...8901",
+      createdAt: "2025-04-28T16:20:00",
+      endDate: "2025-05-05T16:20:00",
+      votesFor: 422,
+      votesAgainst: 753,
+      status: 'rejected',
+      category: "Технический"
     }
   ]);
 
-  const handleVote = (proposalId: number, isFor: boolean) => {
+  const handleCreateProposal = () => {
+    toast({
+      title: "Создание предложения",
+      description: "Эта функция будет доступна в следующем обновлении",
+    });
+  };
+
+  const handleVote = (proposalId: number, voteType: 'for' | 'against') => {
     setProposals(proposals.map(proposal => {
       if (proposal.id === proposalId) {
-        if (isFor) {
-          return { ...proposal, votesFor: proposal.votesFor + 1 };
+        if (proposal.voted) {
+          // Already voted, cancel vote
+          return {
+            ...proposal,
+            voted: false,
+            votesFor: proposal.voteType === 'for' ? proposal.votesFor - 1 : proposal.votesFor,
+            votesAgainst: proposal.voteType === 'against' ? proposal.votesAgainst - 1 : proposal.votesAgainst,
+            voteType: undefined
+          };
         } else {
-          return { ...proposal, votesAgainst: proposal.votesAgainst + 1 };
+          // New vote
+          return {
+            ...proposal,
+            voted: true,
+            voteType,
+            votesFor: voteType === 'for' ? proposal.votesFor + 1 : proposal.votesFor,
+            votesAgainst: voteType === 'against' ? proposal.votesAgainst + 1 : proposal.votesAgainst
+          };
         }
       }
       return proposal;
@@ -51,78 +110,198 @@ export const DaoVoting = () => {
 
     toast({
       title: "Голос учтен",
-      description: `Вы проголосовали ${isFor ? 'за' : 'против'} предложение #${proposalId}`,
+      description: `Ваш голос за предложение #${proposalId} был ${voteType === 'for' ? 'за' : 'против'}`,
     });
   };
 
-  const getTotalVotes = (proposal: Proposal) => proposal.votesFor + proposal.votesAgainst;
-  const getForPercentage = (proposal: Proposal) => 
-    (proposal.votesFor / getTotalVotes(proposal)) * 100;
+  // Calculate time remaining for proposals
+  const calculateTimeRemaining = (endDateStr: string) => {
+    const endDate = new Date(endDateStr);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    
+    if (diffTime <= 0) return "Голосование завершено";
+    
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (diffDays > 0) {
+      return `${diffDays} д ${diffHours} ч`;
+    } else {
+      const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+      return `${diffHours} ч ${diffMinutes} мин`;
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Network className="mr-2" size={20} />
-          SASOK DAO Голосования
-        </CardTitle>
-        <CardDescription>Участвуйте в принятии решений по развитию платформы</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {proposals.map(proposal => (
-          <div key={proposal.id} className="border rounded-lg p-4 space-y-3">
-            <div className="flex justify-between items-start">
-              <h3 className="font-medium">{proposal.title}</h3>
-              <span className="text-xs bg-muted px-2 py-1 rounded">ID: {proposal.id}</span>
-            </div>
-            <p className="text-sm text-muted-foreground">{proposal.description}</p>
-            
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>За: {proposal.votesFor}</span>
-                <span>Против: {proposal.votesAgainst}</span>
-              </div>
-              <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-nova-600 to-forge-500" 
-                  style={{ width: `${getForPercentage(proposal)}%` }}
-                />
-              </div>
-              <div className="text-xs text-right text-muted-foreground">
-                {Math.round(getForPercentage(proposal))}% поддержки
-              </div>
-            </div>
-            
-            <div className="pt-2 flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">
-                Окончание: {proposal.endTime.toLocaleDateString()}
-              </span>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-1"
-                  onClick={() => handleVote(proposal.id, true)}
-                >
-                  <ThumbsUp size={14} />
-                  За
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-1"
-                  onClick={() => handleVote(proposal.id, false)}
-                >
-                  <ThumbsDown size={14} />
-                  Против
-                </Button>
-              </div>
-            </div>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Network size={18} />
+              DAO Голосование
+            </CardTitle>
+            <CardDescription>
+              Принимайте участие в управлении экосистемой SASOK через DAO
+            </CardDescription>
           </div>
-        ))}
+          <Button onClick={handleCreateProposal}>
+            <FilePlus size={16} className="mr-1.5" /> 
+            Создать предложение
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="active">
+          <TabsList className="mb-4 grid grid-cols-3">
+            <TabsTrigger value="active">Активные</TabsTrigger>
+            <TabsTrigger value="passed">Принятые</TabsTrigger>
+            <TabsTrigger value="rejected">Отклоненные</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="active">
+            <div className="space-y-4">
+              {proposals.filter(p => p.status === 'active').map(proposal => (
+                <Card key={proposal.id} className="overflow-hidden">
+                  <div className="bg-muted px-4 py-2 flex justify-between items-center">
+                    <div className="flex items-center">
+                      <span className="text-xs font-medium mr-2 px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                        {proposal.category}
+                      </span>
+                      <span className="text-xs text-muted-foreground">ID #{proposal.id}</span>
+                    </div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock size={14} className="mr-1" />
+                      {calculateTimeRemaining(proposal.endDate)}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="text-lg font-medium mb-1">{proposal.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{proposal.description}</p>
+                    
+                    <div className="flex items-center text-xs text-muted-foreground mb-4">
+                      <Users size={14} className="mr-1" />
+                      Создатель: {proposal.creator} | Создано: {new Date(proposal.createdAt).toLocaleDateString()}
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <div>За: {proposal.votesFor}</div>
+                        <div>Против: {proposal.votesAgainst}</div>
+                      </div>
+                      <div className="flex h-2 rounded-full overflow-hidden bg-muted">
+                        <div 
+                          className="bg-green-500"
+                          style={{ width: `${(proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100}%` }}
+                        ></div>
+                        <div 
+                          className="bg-red-500"
+                          style={{ width: `${(proposal.votesAgainst / (proposal.votesFor + proposal.votesAgainst)) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <Button 
+                        className={`flex-1 ${proposal.voteType === 'for' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                        variant={proposal.voteType === 'for' ? 'default' : 'outline'}
+                        onClick={() => handleVote(proposal.id, 'for')}
+                      >
+                        {proposal.voteType === 'for' ? (
+                          <CheckCircle2 size={16} className="mr-1.5" />
+                        ) : null}
+                        За
+                      </Button>
+                      <Button 
+                        className={`flex-1 ${proposal.voteType === 'against' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                        variant={proposal.voteType === 'against' ? 'default' : 'outline'}
+                        onClick={() => handleVote(proposal.id, 'against')}
+                      >
+                        {proposal.voteType === 'against' ? (
+                          <CheckCircle2 size={16} className="mr-1.5" />
+                        ) : null}
+                        Против
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="passed">
+            <div className="space-y-4">
+              {proposals.filter(p => p.status === 'passed').map(proposal => (
+                <Card key={proposal.id}>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="flex items-center mb-1">
+                          <span className="text-xs font-medium mr-2 px-2 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                            Принято
+                          </span>
+                          <span className="text-xs text-muted-foreground">ID #{proposal.id}</span>
+                        </div>
+                        <h3 className="text-lg font-medium">{proposal.title}</h3>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(proposal.endDate).toLocaleDateString()}
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-3">{proposal.description}</p>
+                    
+                    <div className="flex justify-between text-sm mb-1">
+                      <div>За: {proposal.votesFor}</div>
+                      <div>Против: {proposal.votesAgainst}</div>
+                    </div>
+                    <Progress value={(proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100} className="h-2" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="rejected">
+            <div className="space-y-4">
+              {proposals.filter(p => p.status === 'rejected').map(proposal => (
+                <Card key={proposal.id}>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="flex items-center mb-1">
+                          <span className="text-xs font-medium mr-2 px-2 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                            Отклонено
+                          </span>
+                          <span className="text-xs text-muted-foreground">ID #{proposal.id}</span>
+                        </div>
+                        <h3 className="text-lg font-medium">{proposal.title}</h3>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(proposal.endDate).toLocaleDateString()}
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-3">{proposal.description}</p>
+                    
+                    <div className="flex justify-between text-sm mb-1">
+                      <div>За: {proposal.votesFor}</div>
+                      <div>Против: {proposal.votesAgainst}</div>
+                    </div>
+                    <Progress value={(proposal.votesFor / (proposal.votesFor + proposal.votesAgainst)) * 100} className="h-2" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      <CardFooter>
-        <CreateProposalDialog />
+      <CardFooter className="flex justify-center">
+        <Button variant="outline" size="sm">
+          Показать все предложения
+        </Button>
       </CardFooter>
     </Card>
   );
