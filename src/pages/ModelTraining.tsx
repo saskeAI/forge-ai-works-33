@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Brain, 
@@ -41,7 +40,7 @@ export default function ModelTraining() {
             toast({
               title: "Обучение завершено",
               description: "Модель успешно обучена и готова к использованию.",
-              variant: "success"
+              variant: "default"
             });
           }
           return newProgress;

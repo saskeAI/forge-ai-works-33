@@ -46,7 +46,7 @@ export const ModelTrainingForm = () => {
       toast({
         title: "Обучение завершено",
         description: "Модель успешно обучена и готова к использованию.",
-        variant: "success"
+        variant: "default"
       });
     }, 5000);
   };
