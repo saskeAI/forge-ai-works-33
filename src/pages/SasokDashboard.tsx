@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { MainDashboard } from '@/components/dashboard/MainDashboard';
 import { Web3Dashboard } from '@/components/dashboard/Web3Dashboard';
+import { CompanyInfo } from '@/components/dashboard/CompanyInfo';
 
 export default function SasokDashboard() {
   const { toast } = useToast();
@@ -61,6 +62,7 @@ export default function SasokDashboard() {
         <TabsList className="mb-4">
           <TabsTrigger value="main">Главная</TabsTrigger>
           <TabsTrigger value="web3">Web3</TabsTrigger>
+          <TabsTrigger value="about">О проекте</TabsTrigger>
         </TabsList>
 
         <TabsContent value="main">
@@ -74,6 +76,10 @@ export default function SasokDashboard() {
         
         <TabsContent value="web3">
           <Web3Dashboard />
+        </TabsContent>
+        
+        <TabsContent value="about">
+          <CompanyInfo handleQuickAction={handleQuickAction} />
         </TabsContent>
       </Tabs>
     </div>
