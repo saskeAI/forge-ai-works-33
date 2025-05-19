@@ -1,13 +1,66 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { Key, RefreshCw, Save } from 'lucide-react';
 
 export default function Settings() {
+  const { toast } = useToast();
+  const [apiKeys, setApiKeys] = useState({
+    claude_api_key: '',
+    openrouter_api_key: ''
+  });
+
+  // Load saved API keys from localStorage on component mount
+  useEffect(() => {
+    const claudeKey = localStorage.getItem('claude_api_key') || '';
+    const openrouterKey = localStorage.getItem('openrouter_api_key') || '';
+    
+    setApiKeys({
+      claude_api_key: claudeKey,
+      openrouter_api_key: openrouterKey
+    });
+  }, []);
+
+  // Save API keys to localStorage
+  const saveApiKey = (keyName: string) => {
+    const value = apiKeys[keyName as keyof typeof apiKeys];
+    
+    if (value) {
+      localStorage.setItem(keyName, value);
+      toast({
+        title: 'API-ключ сохранен',
+        description: `${keyName === 'claude_api_key' ? 'Claude' : 'OpenRouter'} API-ключ успешно сохранен`,
+      });
+    }
+  };
+
+  // Reset API key
+  const resetApiKey = (keyName: string) => {
+    localStorage.removeItem(keyName);
+    setApiKeys(prev => ({
+      ...prev,
+      [keyName]: ''
+    }));
+    toast({
+      title: 'API-ключ удален',
+      description: `${keyName === 'claude_api_key' ? 'Claude' : 'OpenRouter'} API-ключ был удален из локального хранилища`,
+    });
+  };
+
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setApiKeys(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Заголовок */}
@@ -18,9 +71,10 @@ export default function Settings() {
       
       {/* Вкладки настроек */}
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList className="grid w-full max-w-md grid-cols-4">
           <TabsTrigger value="general">Основное</TabsTrigger>
           <TabsTrigger value="appearance">Внешний вид</TabsTrigger>
+          <TabsTrigger value="apikeys">API Ключи</TabsTrigger>
           <TabsTrigger value="account">Аккаунт</TabsTrigger>
         </TabsList>
         
@@ -173,6 +227,91 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground">Запускать с свернутой боковой панелью</p>
                 </div>
                 <Switch id="sidebarCollapsed" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* API Ключи */}
+        <TabsContent value="apikeys" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Key className="mr-2" />
+                API Ключи
+              </CardTitle>
+              <CardDescription>Управляйте ключами API для внешних сервисов</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Claude API Key */}
+              <div className="space-y-2">
+                <Label htmlFor="claude_api_key" className="text-base font-medium">Claude API Ключ</Label>
+                <p className="text-sm text-muted-foreground">Используется для чата SASOK и других функций ИИ</p>
+                <div className="flex space-x-2">
+                  <Input
+                    id="claude_api_key"
+                    name="claude_api_key"
+                    value={apiKeys.claude_api_key}
+                    onChange={handleInputChange}
+                    placeholder="Введите ваш Claude API ключ..."
+                    className="flex-1"
+                    type="password"
+                  />
+                  <Button 
+                    onClick={() => saveApiKey('claude_api_key')} 
+                    disabled={!apiKeys.claude_api_key.trim()} 
+                    className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+                  >
+                    <Save size={18} className="mr-2" />
+                    Сохранить
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => resetApiKey('claude_api_key')}
+                    disabled={!localStorage.getItem('claude_api_key')}
+                  >
+                    <RefreshCw size={18} className="mr-2" />
+                    Сбросить
+                  </Button>
+                </div>
+              </div>
+
+              {/* OpenRouter API Key */}
+              <div className="space-y-2">
+                <Label htmlFor="openrouter_api_key" className="text-base font-medium">OpenRouter API Ключ</Label>
+                <p className="text-sm text-muted-foreground">Для доступа к различным LLM моделям через OpenRouter</p>
+                <div className="flex space-x-2">
+                  <Input
+                    id="openrouter_api_key"
+                    name="openrouter_api_key"
+                    value={apiKeys.openrouter_api_key}
+                    onChange={handleInputChange}
+                    placeholder="Введите ваш OpenRouter API ключ..."
+                    className="flex-1"
+                    type="password"
+                  />
+                  <Button 
+                    onClick={() => saveApiKey('openrouter_api_key')} 
+                    disabled={!apiKeys.openrouter_api_key.trim()} 
+                    className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+                  >
+                    <Save size={18} className="mr-2" />
+                    Сохранить
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => resetApiKey('openrouter_api_key')}
+                    disabled={!localStorage.getItem('openrouter_api_key')}
+                  >
+                    <RefreshCw size={18} className="mr-2" />
+                    Сбросить
+                  </Button>
+                </div>
+                {apiKeys.openrouter_api_key === '' && !localStorage.getItem('openrouter_api_key') && (
+                  <div className="mt-1 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded text-sm">
+                    Рекомендуемый ключ: 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
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

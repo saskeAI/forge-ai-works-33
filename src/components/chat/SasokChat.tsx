@@ -1,10 +1,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, RefreshCw } from 'lucide-react';
+import { Send, Bot, User, Sparkles, RefreshCw, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatMessage {
   id: string;
@@ -26,12 +27,7 @@ export const SasokChat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  
-  // API-ключ должен храниться более безопасно, например, в переменных окружения
-  // Для демонстрационных целей можно временно хранить в localStorage
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem('claude_api_key') || '';
-  });
+  const navigate = useNavigate();
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -47,13 +43,16 @@ export const SasokChat: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
     
+    // Получаем API-ключ из localStorage
+    const apiKey = localStorage.getItem('claude_api_key');
+    
     if (!apiKey) {
-      // Если ключ API не установлен, предложить пользователю ввести его
+      // Если ключ API не установлен, предложить пользователю настроить его
       setTimeout(() => {
         const sasokResponse: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: 'Для полноценной работы мне нужен Claude API ключ. Пожалуйста, введите его в поле ниже и нажмите кнопку "Сохранить ключ".',
+          content: 'Для полноценной работы мне нужен Claude API ключ. Пожалуйста, добавьте его в разделе "Настройки > API Ключи".',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, sasokResponse]);
@@ -130,22 +129,23 @@ export const SasokChat: React.FC = () => {
     }
   };
 
-  // Сохранение API-ключа
-  const saveApiKey = () => {
-    if (apiKey) {
-      localStorage.setItem('claude_api_key', apiKey);
-      toast({
-        title: 'API-ключ сохранен',
-        description: 'Claude API-ключ успешно сохранен',
-      });
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // Кнопка для перехода к настройкам API ключей
+  const goToApiSettings = () => {
+    navigate('/settings');
+    // Таймаут, чтобы DOM успел обновиться и затем активировать вкладку API Keys
+    setTimeout(() => {
+      const apiKeysTab = document.querySelector('[value="apikeys"]') as HTMLButtonElement;
+      if (apiKeysTab) {
+        apiKeysTab.click();
+      }
+    }, 100);
   };
 
   // Автоскролл к последнему сообщению
@@ -213,52 +213,22 @@ export const SasokChat: React.FC = () => {
           <div ref={endOfMessagesRef} />
         </div>
         
-        {/* Форма ввода API-ключа, если он не установлен */}
+        {/* Уведомление о необходимости API-ключа */}
         {!localStorage.getItem('claude_api_key') && (
-          <div className="p-4 border-t border-b">
-            <div className="flex flex-col space-y-2">
-              <label htmlFor="apiKey" className="text-sm font-medium">
-                Claude API Ключ
-              </label>
-              <div className="flex space-x-2">
-                <Textarea
-                  id="apiKey"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Введите ваш Claude API ключ..."
-                  className="min-h-[50px] resize-none flex-1"
-                />
-                <Button 
-                  onClick={saveApiKey} 
-                  disabled={!apiKey.trim()} 
-                  className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
-                >
-                  Сохранить ключ
-                </Button>
+          <div className="p-4 border-t">
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded p-4 text-sm flex justify-between items-center">
+              <div>
+                <p className="font-medium">Требуется API-ключ для Claude</p>
+                <p className="text-sm text-muted-foreground">Для полноценной работы чата добавьте ключ в настройках</p>
               </div>
+              <Button 
+                onClick={goToApiSettings} 
+                className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+              >
+                <Settings size={18} className="mr-2" />
+                Настройки
+              </Button>
             </div>
-          </div>
-        )}
-        
-        {/* Кнопка для сброса ключа API */}
-        {localStorage.getItem('claude_api_key') && (
-          <div className="px-4 py-2 border-t flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                localStorage.removeItem('claude_api_key');
-                setApiKey('');
-                toast({
-                  title: 'API-ключ удален',
-                  description: 'Claude API-ключ был удален из локального хранилища',
-                });
-              }}
-              className="text-xs flex items-center"
-            >
-              <RefreshCw size={12} className="mr-1" />
-              Сбросить API-ключ
-            </Button>
           </div>
         )}
         
