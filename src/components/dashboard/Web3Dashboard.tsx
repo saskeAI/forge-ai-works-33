@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { WalletConnection } from '@/components/web3/WalletConnection';
 import { TokenBalance } from '@/components/web3/TokenBalance';
 import { DaoVoting } from '@/components/web3/DaoVoting';
 import { SasokChat } from '@/components/chat/SasokChat';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const Web3Dashboard: React.FC = () => {
   return (
