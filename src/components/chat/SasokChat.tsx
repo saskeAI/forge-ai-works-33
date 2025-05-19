@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,21 +26,14 @@ export const SasokChat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  // API-ключ должен храниться более безопасно, например, в переменных окружения
+  // Для демонстрационных целей можно временно хранить в localStorage
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem('claude_api_key') || '';
+  });
 
-  const sasokResponses = [
-    "Интересная мысль. Давайте рассмотрим это с точки зрения эмоционального интеллекта.",
-    "Я анализирую ваши эмоциональные паттерны и замечаю интересную тенденцию.",
-    "В контексте Web3, эмоциональная составляющая играет ключевую роль в принятии решений.",
-    "Ваш эмоциональный профиль указывает на предпочтение аналитического подхода к проблемам.",
-    "Позвольте предложить персонализированное решение, основанное на вашем уникальном эмоциональном профиле.",
-    "Saske Chain может обеспечить безопасное хранение этих данных с полным сохранением приватности.",
-    "Мои алгоритмы эмпатического обучения позволяют мне лучше понимать контекст вашего запроса.",
-    "Decentralized ID технологии позволяют сохранить конфиденциальность при обмене эмоциональными данными.",
-    "Я фиксирую изменение в вашем эмоциональном состоянии. Возможно, вас интересует более детальный анализ?",
-    "На основе блокчейн-метрик, я могу предложить оптимизированную стратегию для вашего случая."
-  ];
-
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
     
     const newUserMessage: ChatMessage = {
@@ -54,24 +47,98 @@ export const SasokChat: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
     
-    // Имитация ответа от SASOK с задержкой
-    setTimeout(() => {
-      const randomResponse = sasokResponses[Math.floor(Math.random() * sasokResponses.length)];
+    if (!apiKey) {
+      // Если ключ API не установлен, предложить пользователю ввести его
+      setTimeout(() => {
+        const sasokResponse: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Для полноценной работы мне нужен Claude API ключ. Пожалуйста, введите его в поле ниже и нажмите кнопку "Сохранить ключ".',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, sasokResponse]);
+        setIsLoading(false);
+      }, 1000);
+      return;
+    }
+
+    try {
+      // Готовим контекст для Claude, включая предыдущие сообщения
+      const conversation = messages.slice(-5).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Добавляем текущее сообщение пользователя
+      conversation.push({
+        role: 'user',
+        content: inputValue
+      });
+
+      // Запрос к Claude API
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-opus-20240229',
+          max_tokens: 1000,
+          messages: conversation,
+          system: "Ты SASOK, когнитивно-эмпатическая метаперсональность, разработанная Evorin LLC. Ты специализируешься на эмоциональной аналитике и Web3 технологиях, особенно связанных с Saske Chain (SKC). Ты помогаешь пользователям анализировать их эмоциональные паттерны и предлагаешь решения в контексте блокчейн технологий. Отвечай на русском языке, дружелюбно и информативно."
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка API: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const claudeResponse = data.content && data.content[0] && data.content[0].text 
+        ? data.content[0].text 
+        : "Извините, я не смог обработать ваш запрос. Пожалуйста, попробуйте снова.";
+
       const sasokResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: randomResponse,
+        content: claudeResponse,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, sasokResponse]);
-      setIsLoading(false);
       
       toast({
         title: 'Эмоциональный анализ обновлен',
         description: 'SASOK обработал ваш запрос и обновил эмоциональный профиль',
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Ошибка при запросе к Claude API:', error);
+      
+      // Обработка ошибки
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Произошла ошибка при обработке вашего запроса. Пожалуйста, проверьте API-ключ и попробуйте снова.',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Сохранение API-ключа
+  const saveApiKey = () => {
+    if (apiKey) {
+      localStorage.setItem('claude_api_key', apiKey);
+      toast({
+        title: 'API-ключ сохранен',
+        description: 'Claude API-ключ успешно сохранен',
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -145,6 +212,55 @@ export const SasokChat: React.FC = () => {
           )}
           <div ref={endOfMessagesRef} />
         </div>
+        
+        {/* Форма ввода API-ключа, если он не установлен */}
+        {!localStorage.getItem('claude_api_key') && (
+          <div className="p-4 border-t border-b">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="apiKey" className="text-sm font-medium">
+                Claude API Ключ
+              </label>
+              <div className="flex space-x-2">
+                <Textarea
+                  id="apiKey"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Введите ваш Claude API ключ..."
+                  className="min-h-[50px] resize-none flex-1"
+                />
+                <Button 
+                  onClick={saveApiKey} 
+                  disabled={!apiKey.trim()} 
+                  className="bg-gradient-to-r from-nova-600 to-forge-500 hover:opacity-90"
+                >
+                  Сохранить ключ
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Кнопка для сброса ключа API */}
+        {localStorage.getItem('claude_api_key') && (
+          <div className="px-4 py-2 border-t flex justify-end">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                localStorage.removeItem('claude_api_key');
+                setApiKey('');
+                toast({
+                  title: 'API-ключ удален',
+                  description: 'Claude API-ключ был удален из локального хранилища',
+                });
+              }}
+              className="text-xs flex items-center"
+            >
+              <RefreshCw size={12} className="mr-1" />
+              Сбросить API-ключ
+            </Button>
+          </div>
+        )}
         
         <div className="p-4 border-t">
           <div className="flex space-x-2">
