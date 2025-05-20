@@ -5,8 +5,12 @@ import { ActivityTrackingChart } from '@/components/analysis/ActivityTrackingCha
 import { LearningProgressChart } from '@/components/analysis/LearningProgressChart';
 import { Button } from '@/components/ui/button';
 import { Brain, Users, Target, Layers, BadgePlus, Code2 } from 'lucide-react';
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -69,6 +73,9 @@ const Dashboard = () => {
         <LearningProgressChart />
       </div>
       
+      <h2 className="text-xl font-bold mt-6 mb-4">SASOK Модули</h2>
+      <DashboardNavigation />
+      
       <h2 className="text-xl font-bold mt-6 mb-4">Быстрый доступ</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="hover-card">
@@ -80,7 +87,13 @@ const Dashboard = () => {
             <CardDescription className="mb-4">
               Управление проектами и моделями ИИ
             </CardDescription>
-            <Button variant="outline" className="w-full">Открыть</Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate('/projects')}
+            >
+              Открыть
+            </Button>
           </CardContent>
         </Card>
         
@@ -93,7 +106,13 @@ const Dashboard = () => {
             <CardDescription className="mb-4">
               Эмоциональный ИИ для сложных задач
             </CardDescription>
-            <Button variant="default" className="w-full">Открыть</Button>
+            <Button 
+              variant="default" 
+              className="w-full"
+              onClick={() => navigate('/sasok')}
+            >
+              Открыть
+            </Button>
           </CardContent>
         </Card>
         
@@ -106,7 +125,13 @@ const Dashboard = () => {
             <CardDescription className="mb-4">
               Инструменты для разработки и обучения
             </CardDescription>
-            <Button variant="outline" className="w-full">Открыть</Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate('/ai-tools')}
+            >
+              Открыть
+            </Button>
           </CardContent>
         </Card>
       </div>

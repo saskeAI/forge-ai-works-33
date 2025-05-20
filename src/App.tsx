@@ -18,6 +18,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SasokDashboard from "./pages/SasokDashboard";
 import CognitiveArchitecture from "./pages/CognitiveArchitecture";
+import EmotionalAnalysis from "./pages/EmotionalAnalysis";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,11 @@ const App = () => (
           <Route path="/cognitive-architecture" element={
             <AppLayout>
               <CognitiveArchitecture />
+            </AppLayout>
+          } />
+          <Route path="/emotional-analysis" element={
+            <AppLayout>
+              <EmotionalAnalysis />
             </AppLayout>
           } />
           <Route path="*" element={<NotFound />} />
