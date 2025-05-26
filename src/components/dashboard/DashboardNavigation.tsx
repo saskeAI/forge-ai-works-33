@@ -25,6 +25,12 @@ export const DashboardNavigation: React.FC = () => {
       description: 'Структура и компоненты ИИ'
     },
     {
+      title: 'Когнитивные модули',
+      icon: <Activity className="h-6 w-6 text-primary" />,
+      path: '/cognitive-modules',
+      description: 'Модули самоанализа и памяти'
+    },
+    {
       title: 'Web3 и DAO',
       icon: <Users className="h-6 w-6 text-primary" />,
       path: '/sasok',
@@ -39,7 +45,7 @@ export const DashboardNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {navItems.map((item) => (
         <Link key={item.path} to={item.path}>
           <Card className="h-full hover:bg-accent/5 transition-colors cursor-pointer">

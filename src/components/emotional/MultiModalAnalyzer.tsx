@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Waveform, FileAudio, Camera, HeartPulse, Brain } from 'lucide-react';
+import { Type, FileAudio, Camera, HeartPulse, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EmotionalAnalysisResult, ModalityFeatures } from '@/components/web3/types/dao.types';
 import { getEmotionEmoji, formatEmotionValue, mapDominantEmotionToColor } from '@/components/web3/utils/dao.utils';
@@ -93,7 +93,7 @@ export const MultiModalAnalyzer: React.FC = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4 grid grid-cols-4">
             <TabsTrigger value="text" className="flex items-center gap-1">
-              <Waveform size={14} />
+              <Type size={14} />
               Текст
             </TabsTrigger>
             <TabsTrigger value="voice" className="flex items-center gap-1">

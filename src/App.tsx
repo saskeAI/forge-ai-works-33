@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import SasokDashboard from "./pages/SasokDashboard";
 import CognitiveArchitecture from "./pages/CognitiveArchitecture";
 import EmotionalAnalysis from "./pages/EmotionalAnalysis";
+import CognitiveModules from "./pages/CognitiveModules";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +82,11 @@ const App = () => (
           <Route path="/emotional-analysis" element={
             <AppLayout>
               <EmotionalAnalysis />
+            </AppLayout>
+          } />
+          <Route path="/cognitive-modules" element={
+            <AppLayout>
+              <CognitiveModules />
             </AppLayout>
           } />
           <Route path="*" element={<NotFound />} />
