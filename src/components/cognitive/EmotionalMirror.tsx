@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mirror, Heart, Lightbulb, Target, Sparkles } from 'lucide-react';
+import { Reflect2, Heart, Lightbulb, Target, Sparkles } from 'lucide-react';
 
 interface EmotionalReflection {
   userEmotion: string;
@@ -65,7 +65,7 @@ export const EmotionalMirror: React.FC = () => {
     <Card className="overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-nova-50 to-forge-50 dark:from-nova-950 dark:to-forge-950">
         <CardTitle className="flex items-center gap-2">
-          <Mirror className="text-nova-600" size={24} />
+          <Reflect2 className="text-nova-600" size={24} />
           Зеркало эмоций SASOK
         </CardTitle>
         <CardDescription>
@@ -101,7 +101,7 @@ export const EmotionalMirror: React.FC = () => {
             </div>
             
             <div className="flex items-center justify-center gap-2">
-              <Mirror className="text-purple-500" size={16} />
+              <Reflect2 className="text-purple-500" size={16} />
               <span className="text-sm font-medium">Эмпатия:</span>
               <Badge variant="outline">{Math.round(reflection.empathyLevel * 100)}%</Badge>
             </div>
@@ -144,7 +144,7 @@ export const EmotionalMirror: React.FC = () => {
             onClick={() => setMirrorActive(!mirrorActive)}
             className="flex items-center gap-2"
           >
-            <Mirror size={16} />
+            <Reflect2 size={16} />
             {mirrorActive ? 'Остановить зеркало' : 'Активировать зеркало'}
           </Button>
         </div>

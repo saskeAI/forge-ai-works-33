@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,7 @@ import SasokDashboard from "./pages/SasokDashboard";
 import CognitiveArchitecture from "./pages/CognitiveArchitecture";
 import EmotionalAnalysis from "./pages/EmotionalAnalysis";
 import CognitiveModules from "./pages/CognitiveModules";
+import NeuralMatrix from "./pages/NeuralMatrix";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,7 @@ const App = () => (
               <CognitiveModules />
             </AppLayout>
           } />
+          <Route path="/neural-matrix" element={<NeuralMatrix />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

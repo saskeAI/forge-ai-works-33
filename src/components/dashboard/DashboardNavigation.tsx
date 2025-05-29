@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Brain, Users, Activity, LayoutDashboard, Network } from 'lucide-react';
+import { Brain, Users, Activity, LayoutDashboard, Network, Zap } from 'lucide-react';
 
 export const DashboardNavigation: React.FC = () => {
   const navItems = [
@@ -31,10 +31,10 @@ export const DashboardNavigation: React.FC = () => {
       description: 'Модули самоанализа и памяти'
     },
     {
-      title: 'Web3 и DAO',
-      icon: <Users className="h-6 w-6 text-primary" />,
-      path: '/sasok',
-      description: 'Децентрализованное взаимодействие'
+      title: 'NeuralMatrix',
+      icon: <Zap className="h-6 w-6 text-primary" />,
+      path: '/neural-matrix',
+      description: 'Продвинутая нейровизуализация'
     },
     {
       title: 'Семантическая память',
