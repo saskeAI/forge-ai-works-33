@@ -1,157 +1,60 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Reflect2, Heart, Lightbulb, Target, Sparkles } from 'lucide-react';
-
-interface EmotionalReflection {
-  userEmotion: string;
-  intensity: number;
-  sasokResponse: string;
-  empathyLevel: number;
-  insights: string[];
-  recommendations: string[];
-}
+import { Progress } from '@/components/ui/progress';
+import { Eye, Heart, Brain, Zap } from 'lucide-react';
 
 export const EmotionalMirror: React.FC = () => {
-  const [reflection, setReflection] = useState<EmotionalReflection>({
-    userEmotion: 'curiosity',
-    intensity: 0.8,
-    sasokResponse: 'заинтересованность',
-    empathyLevel: 0.75,
-    insights: [
-      'Пользователь проявляет высокий интерес к когнитивным технологиям',
-      'Отмечается аналитический склад мышления',
-      'Присутствует стремление к глубокому пониманию'
-    ],
-    recommendations: [
-      'Предложить расширенную техническую документацию',
-      'Организовать интерактивную демонстрацию алгоритмов',
-      'Рекомендовать изучение смежных областей ИИ'
-    ]
-  });
-
-  const [mirrorActive, setMirrorActive] = useState(true);
-
-  const emotionMap: Record<string, { emoji: string; color: string; description: string }> = {
-    curiosity: { emoji: '🤔', color: 'text-blue-500', description: 'Любопытство' },
-    excitement: { emoji: '🤗', color: 'text-yellow-500', description: 'Возбуждение' },
-    focus: { emoji: '🎯', color: 'text-green-500', description: 'Сосредоточенность' },
-    satisfaction: { emoji: '😊', color: 'text-purple-500', description: 'Удовлетворение' },
-    contemplation: { emoji: '🧘', color: 'text-indigo-500', description: 'Созерцание' }
-  };
+  const [empathy, setEmpathy] = useState(75);
+  const [synchrony, setSynchrony] = useState(60);
+  const [depth, setDepth] = useState(80);
+  const [adaptivity, setAdaptivity] = useState(90);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (mirrorActive) {
-        const emotions = Object.keys(emotionMap);
-        const newEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-        setReflection(prev => ({
-          ...prev,
-          userEmotion: newEmotion,
-          intensity: 0.6 + Math.random() * 0.4,
-          empathyLevel: 0.7 + Math.random() * 0.3
-        }));
-      }
-    }, 8000);
+      setEmpathy(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 10)));
+      setSynchrony(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 10)));
+      setDepth(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 10)));
+      setAdaptivity(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 10)));
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [mirrorActive]);
+  }, []);
 
-  const currentEmotion = emotionMap[reflection.userEmotion];
+  const emotionalMetrics = [
+    { label: 'Эмпатическая точность', value: empathy, icon: Heart, color: 'text-pink-500' },
+    { label: 'Эмоциональная синхронность', value: synchrony, icon: Eye, color: 'text-blue-500' },
+    { label: 'Глубина отражения', value: depth, icon: Brain, color: 'text-purple-500' },
+    { label: 'Адаптивность', value: adaptivity, icon: Zap, color: 'text-yellow-500' }
+  ];
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-nova-50 to-forge-50 dark:from-nova-950 dark:to-forge-950">
-        <CardTitle className="flex items-center gap-2">
-          <Reflect2 className="text-nova-600" size={24} />
-          Зеркало эмоций SASOK
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Eye className="mr-2 h-5 w-5" />
+          Зеркало эмоций
         </CardTitle>
         <CardDescription>
-          Эмпатическое отражение и анализ эмоционального состояния
+          Оценка эмоционального состояния и взаимодействия
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className={`text-8xl transition-all duration-1000 ${mirrorActive ? 'animate-pulse-subtle' : ''}`}>
-              {currentEmotion.emoji}
+      <CardContent className="space-y-4">
+        {emotionalMetrics.map((metric) => (
+          <div key={metric.label} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <metric.icon className="h-4 w-4" strokeWidth={2} color={metric.color} />
+                <span className="text-sm font-medium">{metric.label}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">{metric.value}%</span>
             </div>
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-              <Badge variant="outline" className={currentEmotion.color}>
-                {currentEmotion.description}
-              </Badge>
-            </div>
+            <Progress value={metric.value} className="h-2" />
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-center gap-2">
-              <Heart className="text-red-500" size={16} />
-              <span className="text-sm font-medium">Интенсивность:</span>
-              <Badge variant="secondary">{Math.round(reflection.intensity * 100)}%</Badge>
-            </div>
-            
-            <div className="flex items-center justify-center gap-2">
-              <Sparkles className="text-nova-500" size={16} />
-              <span className="text-sm font-medium">SASOK чувствует:</span>
-              <Badge className="bg-nova-100 text-nova-800 dark:bg-nova-800 dark:text-nova-100">
-                {reflection.sasokResponse}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-center gap-2">
-              <Reflect2 className="text-purple-500" size={16} />
-              <span className="text-sm font-medium">Эмпатия:</span>
-              <Badge variant="outline">{Math.round(reflection.empathyLevel * 100)}%</Badge>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Lightbulb className="text-yellow-500" size={16} />
-              <h4 className="font-medium">Инсайты SASOK</h4>
-            </div>
-            <div className="space-y-2">
-              {reflection.insights.map((insight, index) => (
-                <div key={index} className="text-sm p-2 bg-muted/30 rounded-md border-l-2 border-nova-500">
-                  {insight}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Target className="text-green-500" size={16} />
-              <h4 className="font-medium">Рекомендации</h4>
-            </div>
-            <div className="space-y-2">
-              {reflection.recommendations.map((rec, index) => (
-                <div key={index} className="text-sm p-2 bg-muted/30 rounded-md border-l-2 border-forge-500">
-                  {rec}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center space-x-4 pt-4 border-t">
-          <Button
-            variant={mirrorActive ? "default" : "outline"}
-            onClick={() => setMirrorActive(!mirrorActive)}
-            className="flex items-center gap-2"
-          >
-            <Reflect2 size={16} />
-            {mirrorActive ? 'Остановить зеркало' : 'Активировать зеркало'}
-          </Button>
-        </div>
-
-        <div className="text-center text-xs text-muted-foreground">
-          <p>Эмоциональное зеркало анализирует микровыражения, тон голоса и контекст взаимодействия</p>
-        </div>
+        ))}
+        <Button variant="outline">
+          Подробнее
+        </Button>
       </CardContent>
     </Card>
   );
